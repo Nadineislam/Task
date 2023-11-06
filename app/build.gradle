@@ -90,5 +90,9 @@ dependencies {
 
     implementation "androidx.lifecycle:lifecycle-runtime-compose:2.6.2"
 
+    //coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    //test for coroutines
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0'
 }

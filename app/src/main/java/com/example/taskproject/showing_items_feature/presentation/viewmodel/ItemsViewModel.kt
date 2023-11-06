@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskproject.core.utils.Resource
 import com.example.taskproject.showing_items_feature.data.remote.dto.CombinedResponse
-import com.example.taskproject.showing_items_feature.domain.use_case.ItemsUseCase
+import com.example.taskproject.showing_items_feature.domain.use_case.IItemsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ItemsViewModel @Inject constructor(
-    private val itemsUseCase: ItemsUseCase
+    private val itemsUseCase: IItemsUseCase
 ) : ViewModel() {
     private val _items: MutableStateFlow<Resource<List<CombinedResponse>>> =
         MutableStateFlow(Resource.Loading())
@@ -24,7 +24,7 @@ class ItemsViewModel @Inject constructor(
         getItems()
     }
 
-    private fun getItems() = viewModelScope.launch {
+    fun getItems() = viewModelScope.launch {
         val response = itemsUseCase()
         _items.value = handleItemsResponse(response)
     }

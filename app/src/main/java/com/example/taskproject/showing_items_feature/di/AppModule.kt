@@ -4,6 +4,8 @@ import com.example.taskproject.core.utils.Constants
 import com.example.taskproject.showing_items_feature.data.remote.ItemsApi
 import com.example.taskproject.showing_items_feature.data.repository.ItemsRepositoryImpl
 import com.example.taskproject.showing_items_feature.domain.repository.ItemsRepository
+import com.example.taskproject.showing_items_feature.domain.use_case.IItemsUseCase
+import com.example.taskproject.showing_items_feature.domain.use_case.ItemsUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +19,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Singleton
+    @Provides
+    fun provideItemsUseCase(itemsUseCase: ItemsUseCase): IItemsUseCase {
+        return itemsUseCase
+    }
+
     @Singleton
     @Provides
     fun providesHttpLoggingInterceptor() = HttpLoggingInterceptor()
