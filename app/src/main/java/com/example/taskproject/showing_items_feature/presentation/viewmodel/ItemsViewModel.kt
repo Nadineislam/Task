@@ -3,9 +3,7 @@ package com.example.taskproject.showing_items_feature.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskproject.core.utils.Resource
-import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsDateResponse
-import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsResponse
-import com.example.taskproject.showing_items_feature.domain.use_case.ItemsDateUseCase
+import com.example.taskproject.showing_items_feature.data.remote.dto.CombinedResponse
 import com.example.taskproject.showing_items_feature.domain.use_case.ItemsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,15 +14,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ItemsViewModel @Inject constructor(
-    private val itemsUseCase: ItemsUseCase,
-    private val itemsDateUseCase: ItemsDateUseCase
+    private val itemsUseCase: ItemsUseCase
 ) : ViewModel() {
-    private val _items: MutableStateFlow<Resource<ItemsResponse>> =
+    private val _items: MutableStateFlow<Resource<List<CombinedResponse>>> =
         MutableStateFlow(Resource.Loading())
-    val items: StateFlow<Resource<ItemsResponse>> = _items
-    private val _itemsDate: MutableStateFlow<Resource<ItemsDateResponse>> =
-        MutableStateFlow(Resource.Loading())
-    val itemsDate: StateFlow<Resource<ItemsDateResponse>> = _itemsDate
+    val items: StateFlow<Resource<List<CombinedResponse>>> = _items
 
     init {
         getItems()
@@ -35,7 +29,7 @@ class ItemsViewModel @Inject constructor(
         _items.value = handleItemsResponse(response)
     }
 
-    private fun handleItemsResponse(response: Response<ItemsResponse>): Resource<ItemsResponse> {
+    private fun handleItemsResponse(response: Response<List<CombinedResponse>>): Resource<List<CombinedResponse>> {
         if (response.isSuccessful) {
             response.body()?.let { resultResponse ->
                 return Resource.Success(resultResponse)
@@ -43,21 +37,7 @@ class ItemsViewModel @Inject constructor(
         }
         return Resource.Error("An error occurred")
     }
-
-    fun getItemsDate(owner: String, repo: String) = viewModelScope.launch {
-        val response = itemsDateUseCase(owner, repo)
-        _itemsDate.value = handleItemsDateResponse(response)
-
-    }
-
-    private fun handleItemsDateResponse(response: Response<ItemsDateResponse>): Resource<ItemsDateResponse> {
-        if (response.isSuccessful) {
-            response.body()?.let { resultResponse ->
-                return Resource.Success(resultResponse)
-            }
-        }
-        return Resource.Error("An error occurred")
-    }
-
 }
+
+
 

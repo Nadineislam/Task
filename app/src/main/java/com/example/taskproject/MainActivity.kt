@@ -24,7 +24,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -40,8 +39,9 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.taskproject.core.utils.Resource
+import com.example.taskproject.showing_items_feature.data.remote.dto.CombinedResponse
+import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsDateResponse
 import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsResponseItem
-import com.example.taskproject.showing_items_feature.data.remote.dto.Owner
 import com.example.taskproject.showing_items_feature.presentation.viewmodel.ItemsViewModel
 import com.example.taskproject.ui.theme.TaskProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -75,8 +75,8 @@ fun ItemsApp(viewModel: ItemsViewModel) {
 
     when (val resource = items.value) {
         is Resource.Success -> {
-            val itemsList = resource.data
-            ItemsList(items = itemsList!!, viewModel)
+            val combinedResponses = resource.data
+            ItemsList(items = combinedResponses ?: emptyList())
         }
 
         is Resource.Error -> {
@@ -93,24 +93,22 @@ fun ItemsApp(viewModel: ItemsViewModel) {
             }
         }
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@ExperimentalCoilApi
 @Composable
-fun ItemsList(items: List<ItemsResponseItem>, viewModel: ItemsViewModel) {
+fun ItemsList(items: List<CombinedResponse>) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(15.dp),
     ) {
-        items(items) { item ->
+        items(items) { combinedResponse ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 5.dp)
             ) {
-                ItemDetails(item = item, owner = item.owner, viewModel)
+                ItemDetails(item = combinedResponse.item, date = combinedResponse.date)
             }
         }
     }
@@ -119,22 +117,16 @@ fun ItemsList(items: List<ItemsResponseItem>, viewModel: ItemsViewModel) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ItemDetails(
-    item: ItemsResponseItem,
-    owner: Owner,
-    viewModel: ItemsViewModel,
+    item: ItemsResponseItem?,
+    date: ItemsDateResponse?,
     modifier: Modifier = Modifier,
 ) {
-    val itemsDate = viewModel.itemsDate.collectAsStateWithLifecycle()
-    LaunchedEffect(key1 = Unit) {
-        viewModel.getItemsDate(owner.login, item.name)
-    }
     Card(
         shape = RoundedCornerShape(9.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = modifier
             .padding(2.dp)
     ) {
-
         Box(modifier = Modifier) {
             Box(
                 modifier = Modifier
@@ -142,11 +134,12 @@ fun ItemDetails(
                     .height(280.dp)
             ) {
                 val painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current).data(data = owner.avatar_url)
-                        .apply(block = fun ImageRequest.Builder.() {
+                    ImageRequest.Builder(LocalContext.current).data(data = item?.owner?.avatar_url)
+                        .apply {
                             transformations(
                             )
-                        }).build()
+                        }
+                        .build()
                 )
                 Image(
                     painter = painter,
@@ -180,8 +173,9 @@ fun ItemDetails(
                     .padding(16.dp)
             ) {
                 Column {
+                    // Movie Title
                     Text(
-                        text = item.name,
+                        text = item?.name ?: "",
                         modifier = Modifier.fillMaxWidth(),
                         style = TextStyle(
                             color = Color.White,
@@ -190,7 +184,7 @@ fun ItemDetails(
                         )
                     )
                     Text(
-                        text = "Owner: ${owner.login}",
+                        text = "Owner: ${item?.owner?.login}",
                         modifier = Modifier.padding(top = 4.dp),
                         style = TextStyle(
                             color = Color.White,
@@ -198,51 +192,107 @@ fun ItemDetails(
                             fontWeight = FontWeight.Normal
                         )
                     )
-                    when (val resource = itemsDate.value) {
-                        is Resource.Success -> {
-                            val creationDate = resource.data?.created_at
-                            if (creationDate != null) {
-                                val formattedDate = formatDate(creationDate)
-                                Text(
-                                    text = "Created: $formattedDate",
-                                    modifier = Modifier.padding(top = 4.dp),
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Normal
-                                    )
-                                )
-                            }
-                        }
+                    val formattedDate = formatDate(date?.created_at ?: "")
+                    Text(
+                        text = "Created: $formattedDate",
+                        modifier = Modifier.padding(top = 4.dp),
+                        style = TextStyle(
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    )
 
-                        is Resource.Error -> {
-                            Text(
-                                text = "Error fetching creation date",
-                                modifier = Modifier.padding(top = 4.dp),
-                                style = TextStyle(
-                                    color = Color.Red,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            )
-                        }
-
-                        is Resource.Loading -> {
-                            Text(
-                                text = "Fetching creation date...",
-                                modifier = Modifier.padding(top = 4.dp),
-                                style = TextStyle(
-                                    color = Color.Gray,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            )
-                        }
-                    }
                 }
             }
         }
     }
+//    Card(
+//        shape = RoundedCornerShape(9.dp),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+//        modifier = modifier
+//            .padding(2.dp)
+//    ) {
+//
+//        Box(modifier = Modifier) {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(280.dp)
+//            ) {
+//                val painter = rememberAsyncImagePainter(
+//                    ImageRequest.Builder(LocalContext.current).data(data = item?.owner?.avatar_url)
+//                        .apply {
+//                            transformations(
+//                            )
+//                        }
+//                        .build()
+//                )
+//                Image(
+//                    painter = painter,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    contentScale = ContentScale.Crop,
+//                    contentDescription = "Owner Avatar"
+//                )
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .background(
+//                            brush = Brush.verticalGradient(
+//                                colors = listOf(
+//                                    Color.Transparent,
+//                                    Color.Black.copy(alpha = 0.1f),
+//                                    Color.Black.copy(alpha = 0.6f),
+//                                    Color.Black.copy(alpha = 0.9f),
+//                                ),
+//                                startY = 0f,
+//                                endY = Float.POSITIVE_INFINITY
+//                            )
+//                        )
+//                )
+//            }
+//
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .wrapContentHeight()
+//                    .align(Alignment.BottomStart)
+//                    .padding(16.dp)
+//            ) {
+//                Column {
+//                    Text(
+//                        text = item?.name ?: "",
+//                        modifier = Modifier.fillMaxWidth(),
+//                        style = TextStyle(
+//                            color = Color.White,
+//                            fontSize = 18.sp,
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    )
+//                    Text(
+//                        text = "Owner: ${item?.owner?.login}",
+//                        modifier = Modifier.padding(top = 4.dp),
+//                        style = TextStyle(
+//                            color = Color.White,
+//                            fontSize = 14.sp,
+//                            fontWeight = FontWeight.Normal
+//                        )
+//                    )
+//                }
+//
+//                val formattedDate = formatDate(date?.created_at ?: "")
+//                Text(
+//                    text = "Created: $formattedDate",
+//                    modifier = Modifier.padding(top = 4.dp),
+//                    style = TextStyle(
+//                        color = Color.White,
+//                        fontSize = 14.sp,
+//                        fontWeight = FontWeight.Normal
+//                    )
+//                )
+//            }
+//        }
+//    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
