@@ -171,7 +171,6 @@ fun ItemDetails(
                     .padding(16.dp)
             ) {
                 Column {
-                    // Movie Title
                     Text(
                         text = item?.name ?: "",
                         modifier = Modifier.fillMaxWidth(),
