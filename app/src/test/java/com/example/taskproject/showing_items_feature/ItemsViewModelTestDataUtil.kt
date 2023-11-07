@@ -1,5 +1,6 @@
 package com.example.taskproject.showing_items_feature
 
+import com.example.taskproject.showing_items_feature.data.remote.dto.CombinedResponse
 import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsDateResponse
 import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsResponse
 import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsResponseItem
@@ -19,6 +20,10 @@ val ownerItem = Owner(
 )
 val expectedItems = ItemsDateResponse(
     1, "grit", ownerItem, "2023-01-01"
+)
+val expectedCombinedResponse = CombinedResponse(
+    ItemsResponseItem(1, "grit", ownerItem, "https://example.com/item/1"),
+    expectedItems
 )
 
 val fakeSuccessItemsRepository = object : ItemsRepository {

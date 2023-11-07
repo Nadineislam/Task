@@ -12,6 +12,7 @@ import org.junit.Test
 class ItemsViewModelTest {
     @get:Rule
     val mainCoroutineExt = MainCoroutineExt()
+
     private lateinit var viewModel: ItemsViewModel
     private lateinit var fakeItemsUseCase: FakeItemsUseCase
 
