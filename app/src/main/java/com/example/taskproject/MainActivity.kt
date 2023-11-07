@@ -40,15 +40,10 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.taskproject.core.utils.Resource
 import com.example.taskproject.showing_items_feature.data.remote.dto.CombinedResponse
-import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsDateResponse
 import com.example.taskproject.showing_items_feature.data.remote.dto.ItemsResponseItem
 import com.example.taskproject.showing_items_feature.presentation.viewmodel.ItemsViewModel
 import com.example.taskproject.ui.theme.TaskProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.Duration
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 
 @AndroidEntryPoint
@@ -108,7 +103,10 @@ fun ItemsList(items: List<CombinedResponse>) {
                     .fillMaxWidth()
                     .padding(vertical = 5.dp)
             ) {
-                ItemDetails(item = combinedResponse.item, date = combinedResponse.date)
+                ItemDetails(
+                    item = combinedResponse.item,
+                    formattedDate = combinedResponse.formattedDate
+                )
             }
         }
     }
@@ -118,7 +116,7 @@ fun ItemsList(items: List<CombinedResponse>) {
 @Composable
 fun ItemDetails(
     item: ItemsResponseItem?,
-    date: ItemsDateResponse?,
+    formattedDate: String?,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -192,7 +190,6 @@ fun ItemDetails(
                             fontWeight = FontWeight.Normal
                         )
                     )
-                    val formattedDate = formatDate(date?.created_at ?: "")
                     Text(
                         text = "Created: $formattedDate",
                         modifier = Modifier.padding(top = 4.dp),
@@ -205,30 +202,6 @@ fun ItemDetails(
 
                 }
             }
-        }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-private fun formatDate(createdAt: String): String {
-    val dateFormatter = DateTimeFormatter.ISO_DATE_TIME
-    val createdDate = OffsetDateTime.parse(createdAt, dateFormatter)
-    val now = OffsetDateTime.now()
-    val difference = Duration.between(createdDate, now)
-
-    return when {
-        difference.toDays() >= 180 -> {
-            val formattedDate = createdDate.format(
-                DateTimeFormatter.ofPattern("EEEE, MMM d, yyyy", Locale.getDefault())
-            )
-            formattedDate
-        }
-
-        difference.toDays() >= 120 -> "4 months ago"
-        else -> {
-            val months = difference.toDays() / 30
-            val years = months / 12
-            "$months months ago, $years years ago"
         }
     }
 }
