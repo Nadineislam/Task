@@ -1,11 +1,9 @@
 package com.example.taskproject
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -47,11 +45,10 @@ import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
+@OptIn(ExperimentalCoilApi::class)
 class MainActivity : ComponentActivity() {
     private val viewModel: ItemsViewModel by viewModels()
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    @OptIn(ExperimentalCoilApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -62,7 +59,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalCoilApi
 @Composable
 fun ItemsApp(viewModel: ItemsViewModel) {
@@ -90,7 +86,6 @@ fun ItemsApp(viewModel: ItemsViewModel) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ItemsList(items: List<CombinedResponse>) {
     LazyColumn(
@@ -112,7 +107,6 @@ fun ItemsList(items: List<CombinedResponse>) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ItemDetails(
     item: ItemsResponseItem?,
@@ -134,8 +128,6 @@ fun ItemDetails(
                 val painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current).data(data = item?.owner?.avatar_url)
                         .apply {
-                            transformations(
-                            )
                         }
                         .build()
                 )
@@ -143,7 +135,7 @@ fun ItemDetails(
                     painter = painter,
                     modifier = Modifier.fillMaxWidth(),
                     contentScale = ContentScale.Crop,
-                    contentDescription = "food"
+                    contentDescription = "avatar"
                 )
                 Box(
                     modifier = Modifier
